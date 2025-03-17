@@ -6,3 +6,6 @@ After=network.target
 ExecStart=/usr/bin/python3 /path/to/agent.py
 Restart=always
 User=root
+
+[Install]
+WantedBy=multi-user.target
