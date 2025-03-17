@@ -1,0 +1,12 @@
+[Unit]
+Description=Automated Stress Test Service
+After=network.target
+
+[Service]
+ExecStart=/home/nicolasegaldona/stress_test.sh
+Restart=always
+User=root
+WorkingDirectory=/home/nicolasegaldona
+
+[Install]
+WantedBy=multi-user.target
