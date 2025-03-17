@@ -3,7 +3,7 @@ Description=System Monitoring Agent
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /path/to/agent.py
+ExecStart=/usr/bin/python3 /home/stress_monitor_user/agent.py
 Restart=always
 User=root
 
