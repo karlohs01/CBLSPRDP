@@ -1,0 +1,8 @@
+[Unit]
+Description=System Monitoring Agent
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /path/to/agent.py
+Restart=always
+User=root
