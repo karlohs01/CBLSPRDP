@@ -4,7 +4,7 @@ import time
 import json
 
 # configuration 
-#SERVER_URL = 
+SERVER_URL = "https://34.139.153.229"
 INTERVAL = 5
 
 def get_system_metrics():
