@@ -4,8 +4,7 @@ import json
 import time
 import requests
 
-SERVER_URL = "http://35.227.126.36:5000/data"  # Dashboard URL
-PIPE_PATH = "/tmp/perf_metrics"
+SERVER_URL = "http://192.168.56.1:5000/data"  # Dashboard URL
 INTERVAL = 5
 
 def get_system_metrics():
@@ -30,32 +29,16 @@ def get_temperature():
     except AttributeError:
         return None
 
-def setup_named_pipe():
-    """Create a named pipe (FIFO) if it doesn't exist."""
-    if not os.path.exists(PIPE_PATH):
-        os.mkfifo(PIPE_PATH)
-
-def write_to_pipe(data):
-    """Write system metrics to the named pipe."""
-    with open(PIPE_PATH, "w") as pipe:
-        pipe.write(json.dumps(data) + "\n")
-
-def send_data(data):
+def send_data():
     """Send system metrics to the dashboard via HTTP."""
-    try:
-        response = requests.post(SERVER_URL, json=data, timeout=5)
-        response.raise_for_status()
-        print(f"Data sent: {data}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending data: {e}")
-
-def main():
-    setup_named_pipe()
     while True:
-        metrics = get_system_metrics()
-        write_to_pipe(metrics)  # Write to pipe (for local debugging)
-        send_data(metrics)  # Send data to dashboard
-        time.sleep(INTERVAL)
+        data = get_system_metrics()
+        try:
+            response = requests.post(SERVER_URL, json=data, timeout=5)
+            response.raise_for_status()
+            print(f"Data sent: {data}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending data: {e}")
 
 if __name__ == "__main__":
-    main()
+    send_data()
