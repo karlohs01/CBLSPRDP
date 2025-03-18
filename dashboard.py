@@ -1,6 +1,9 @@
 from flask import Flask, request, render_template, jsonify
-import plotly.graph_objs as go
 from collections import deque
+import requests
+
+
+AGENT_URL = "http://35.190.143.59:5000/metrics"
 
 app = Flask(__name__)
 
@@ -15,11 +18,11 @@ history = {
 
 # Default thresholds
 thresholds = {
-    "cpu": 80,
-    "memory": 80,
-    "disk": 90,
-    "network": 50000000,
-    "temperature": 80
+    "cpu": 80, # measured in %
+    "memory": 80, # measured in %
+    "disk": 90, # measured in #
+    "network": 50000000, # measured in bytes
+    "temperature": 80 # measured in deg Celsius
 }
 
 @app.route('/')
@@ -40,7 +43,12 @@ def receive_data():
 @app.route('/metrics')
 def get_metrics():
     """Send historical data to update the dashboard."""
-    return jsonify({k: list(v) for k, v in history.items()})
+    try:
+        response = requests.get(AGENT_URL, timeout=5)
+        data = response.json()
+        return jsonify(data)
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"failed to fetch data from agent: {e}"})
 
 @app.route('/set_thresholds', methods=['POST'])
 def set_thresholds():
