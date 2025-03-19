@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 import time
 
-SERVER_URL = "http://34.23.129.192:5000/metrics"
+SERVER_URL = "http://34.148.209.117:5000/metrics"
 REFRESH_INTERVAL = 5  # Refresh rate in seconds
 
 # Default threshold values
@@ -28,18 +28,32 @@ history = {
 }
 
 def fetch_data():
-    """Fetch performance data from the agent."""
+    """Fetch system metrics from the server."""
     try:
-        response = requests.get(SERVER_URL, timeout=5)
+        response = requests.get(SERVER_URL)
         response.raise_for_status()
         data = response.json()
 
-        # Extract the latest value for each metric
+        # Validate that data is not empty
+        if not data:
+            print("No data received from the server.")
+            return {}
+
+        # Ensure data contains at least one valid entry
+        if not isinstance(data, list) or len(data) == 0:
+            print("Invalid or empty data format.")
+            return {}
+
+        # Extract the latest metrics
         result = {key: data[-1][key] for key in data[0]}
         return result
-    except requests.exceptions.RequestException as e:
+
+    except requests.RequestException as e:
         print(f"Error fetching data: {e}")
-        return None
+        return {}
+    except (IndexError, KeyError) as e:
+        print(f"Data processing error: {e}")
+        return {}
 
 
 
