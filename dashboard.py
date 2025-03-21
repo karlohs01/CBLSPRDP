@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 import time
 
-SERVER_URL = "http://34.148.209.117:5000/metrics"
+SERVER_URL = "http://34.139.15.29:5000/metrics"
 REFRESH_INTERVAL = 5  # Refresh rate in seconds
 
 # Default threshold values
@@ -44,7 +44,7 @@ def fetch_data():
             print("Invalid or empty data format.")
             return {}
 
-        # Extract the latest metrics
+        # Extract the latest metrics and convert to dictionary
         result = {key: data[-1][key] for key in data[0]}
         return result
 
@@ -86,16 +86,13 @@ def update_graphs(data):
 
 def check_thresholds(data):
     """Check if any metric exceeds the threshold and trigger alerts."""
-    for metric, values in data.items():
-        if isinstance(values, list) and values:  # Ensure it's a list and not empty
-            latest_value = values[-1]  # Get the latest value
-            if latest_value > thresholds.get(metric, float('inf')):
+    for metric, value in data.items():
+        if isinstance(data, dict) and data:  # Ensure it's a dictionary and not empty
+            if value > thresholds.get(metric, float('inf')):
                 messagebox.showwarning(
                     "Threshold Exceeded",
-                    f"{metric.capitalize()} is at {latest_value}% (Threshold: {thresholds[metric]}%)"
+                    f"{metric.capitalize()} is at {value}% (Threshold: {thresholds[metric]}%)"
                 )
-        else:
-            print(f"Unexpected format for {metric}: {values}")
 
 def update_dashboard():
     """Continuously fetch data, update graphs, and check thresholds."""
