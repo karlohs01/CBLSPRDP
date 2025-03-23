@@ -1,0 +1,13 @@
+[Unit]
+Description=Python Server for Performance Monitoring
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/stress_monitor_user/
+ExecStart=/usr/bin/python3 /home/stress_monitor_user/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
