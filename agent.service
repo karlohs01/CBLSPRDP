@@ -6,6 +6,7 @@ After=network.target
 ExecStart=/usr/bin/python3 /home/stress_monitor_user/agent.py
 Restart=always
 User=root
+WorkingDirectory=/home/stress_monitor_user/
 
 [Install]
 WantedBy=multi-user.target
