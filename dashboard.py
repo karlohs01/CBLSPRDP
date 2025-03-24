@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 import time
 
-SERVER_URL = "http://34.139.15.29:5000/metrics"
+SERVER_URL = "http://104.196.136.236:5000/metrics"
 REFRESH_INTERVAL = 5  # Refresh rate in seconds
 
 # Default threshold values
@@ -107,62 +107,52 @@ def set_thresholds():
     """Update threshold values based on user input."""
     for metric, entry in threshold_entries.items():
         try:
-            thresholds[metric] = float(entry.get())
+            new_value = float(entry.get())
+            if new_value <= 0:
+                raise ValueError
+            thresholds[metric] = new_value
         except ValueError:
             messagebox.showerror("Invalid Input", f"Please enter a valid number for {metric.capitalize()} threshold.")
+    update_graphs()
 
-class ScrollableFrame(tk.Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
-        canvas = tk.Canvas(self)
-        scrollbar = tk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        self.scrollable_frame = tk.Frame(canvas)
 
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-# GUI setup
+# GUI Setup
 root = tk.Tk()
 root.title("Performance Monitoring Dashboard")
-root.geometry("700x400")
+root.geometry("900x500")  # Adjusted size for side panel
 
-# creating mpl figure for the graphs
+# Create main layout frames
+main_frame = tk.Frame(root)
+main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+graph_frame = tk.Frame(main_frame)
+graph_frame.pack(side="left", fill="both", expand=True)
+
+panel_frame = tk.Frame(main_frame, width=200, padx=10, pady=10, relief=tk.RIDGE, borderwidth=2)
+panel_frame.pack(side="right", fill="y")
+
+# Matplotlib figure for graphs
 fig, axes = plt.subplots(nrows=5, ncols=1, figsize=(6, 8))
-graph_axes = {
-    "cpu": axes[0],
-    "memory": axes[1],
-    "disk": axes[2],
-    "network": axes[3],
-    "temperature": axes[4],
-}
+graph_axes = {metric: ax for metric, ax in zip(thresholds.keys(), axes)}
 
-canvas = FigureCanvasTkAgg(fig, master=root)
+canvas = FigureCanvasTkAgg(fig, master=graph_frame)
 canvas.get_tk_widget().pack()
 
-# creating scrollable frame for threshold adjustment and other controls
-scroll_frame = ScrollableFrame(root)
-scroll_frame.pack(fill="both", expand=True)
-
+# Panel for threshold adjustment controls
 threshold_entries = {}
+tk.Label(panel_frame, text="Adjust Thresholds", font=("Arial", 12, "bold")).pack(pady=5)
+
 for metric, default_value in thresholds.items():
-    lbl = tk.Label(scroll_frame.scrollable_frame, text=f"{metric.capitalize()} Threshold:")
-    lbl.pack(pady=(10, 0))
-    entry = tk.Entry(scroll_frame.scrollable_frame)
+    tk.Label(panel_frame, text=f"{metric.capitalize()} Threshold:").pack()
+    entry = tk.Entry(panel_frame, width=10)
     entry.insert(0, str(default_value))
-    entry.pack(pady=(0, 10))
+    entry.pack(pady=5)
     threshold_entries[metric] = entry
 
-set_button = tk.Button(scroll_frame.scrollable_frame, text="Set Thresholds", command=set_thresholds)
+set_button = tk.Button(panel_frame, text="Set Thresholds", command=set_thresholds)
 set_button.pack(pady=10)
 
-# starting data fetch thread
+# Start data fetch thread
 thread = threading.Thread(target=update_dashboard, daemon=True)
 thread.start()
 
