@@ -113,7 +113,7 @@ def set_thresholds():
             thresholds[metric] = new_value
         except ValueError:
             messagebox.showerror("Invalid Input", f"Please enter a valid number for {metric.capitalize()} threshold.")
-    update_graphs()
+    update_graphs(data)
 
 
 # GUI Setup
